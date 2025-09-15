@@ -1,0 +1,20 @@
+SET SERVEROUTPUT ON;
+
+DECLARE
+    x   INTEGER;
+    myexep EXCEPTION;
+BEGIN
+    x := 10;
+    dbms_output.put_line('VALOR DE X ES = '
+    || x);
+    IF
+        x = 10
+    THEN
+        RAISE myexep;
+    END IF;
+EXCEPTION
+    WHEN no_data_found THEN
+        dbms_output.put_line('ERROR');
+    WHEN myexep THEN
+        dbms_output.put_line('VALOR NO PERMITIDO');
+END;

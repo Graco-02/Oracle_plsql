@@ -1,0 +1,121 @@
+SET SERVEROUTPUT ON;
+
+EXEC dbms_output.enable(NULL);
+
+BEGIN
+    dbms_output.put_line('CODENT'||';CENTALTA'||';CUENTA'||';SIAIDCD'||';PAN'||';IMPTRN'||';CLAMONTRN'||';FECTRN'||';INDNORCOR'||';TIPOFAC'||';INDCRUCE'||';IMPAUTCON'||';CLAMONCON'||';IMPCRUZADO'||';FECULTACT'||';SALAUTCRE');
+
+    FOR fila_principal IN (
+        SELECT
+            a.codent,
+            a.centalta,
+            a.cuenta,
+            a.siaidcd,
+            a.pan,
+            a.imptrn,
+            a.clamontrn,
+            a.fectrn,
+            a.indnorcor,
+            a.tipofac,
+            a.indcruce,
+            a.impautcon,
+            a.clamoncon,
+            b.impcruzado,
+            b.fecultact,
+            c.salautcre
+        FROM
+            cussatpre.mpdt004 a,
+            cussatpre.pcdt800 b,
+            cussatpre.mpdt163 c
+        WHERE
+            a.indcruce IN (
+                1,
+                2
+            )
+            AND   b.impcruzado > 0
+            AND   c.salautcre <> 0
+            AND   a.codent = b.codent
+            AND   a.siaidcd = b.siaidcd
+            AND   a.codent = c.codent
+            AND   a.centalta = c.centalta
+            AND   a.cuenta = c.cuenta
+            AND   a.clamoncon = c.clamon
+            AND   ( a.codent,
+            a.centalta,
+            a.cuenta,
+            a.clamoncon ) NOT IN (
+                SELECT
+                    d.codent,
+                    d.centalta,
+                    d.cuenta,
+                    d.clamoncon
+                FROM
+                    cussatpre.mpdt004 d
+                WHERE
+                    d.indcruce = 0
+            )
+    ) LOOP
+        dbms_output.put_line(fila_principal.codent
+        || ';'
+        || fila_principal.centalta
+        || ';'
+        || fila_principal.cuenta
+        || ';'
+        || fila_principal.siaidcd
+        || ';'
+        || fila_principal.pan
+        || ';'
+        || fila_principal.imptrn
+        || ';'
+        || fila_principal.clamontrn
+        || ';'
+        || fila_principal.fectrn
+        || ';'
+        || fila_principal.indnorcor
+        || ';'
+        || fila_principal.tipofac
+        || ';'
+        || fila_principal.indcruce
+        || ';'
+        || fila_principal.impautcon
+        || ';'
+        || fila_principal.clamoncon
+        || ';'
+        || fila_principal.impcruzado
+        || ';'
+        || fila_principal.fecultact
+        || ';'
+        || fila_principal.salautcre);
+
+       IF fila_principal.salautcre > 0 THEN
+                dbms_output.put_line('UPDATE SATPRO.MPDT163 SET SALAUTCRE=SALAUTCRE-'
+                || fila_principal.salautcre
+                || ',USUARIOUMO=*FGFERRER*, CODTERMUMO=*CASO*, CONTCUR=*FECHA*'
+                || ' WHERE CODENT=*'
+                || fila_principal.codent
+                || '* AND CENTALTA=*'
+                || fila_principal.centalta
+                || '* AND CUENTA=*'
+                || fila_principal.cuenta
+                || '*'
+                || ' AND CLAMON=*'
+                || fila_principal.clamontrn
+                || '*;');
+        ELSE  
+                dbms_output.put_line('UPDATE SATPRO.MPDT163 SET SALAUTCRE=SALAUTCRE+'
+                || fila_principal.salautcre
+                || ',USUARIOUMO=*FGFERRER*, CODTERMUMO=*CASO*, CONTCUR=*FECHA*'
+                || ' WHERE CODENT=*'
+                || fila_principal.codent
+                || '* AND CENTALTA=*'
+                || fila_principal.centalta
+                || '* AND CUENTA=*'
+                || fila_principal.cuenta
+                || '*'
+                || ' AND CLAMON=*'
+                || fila_principal.clamontrn
+                || '*;');
+        END IF;
+    END LOOP;
+
+END;
